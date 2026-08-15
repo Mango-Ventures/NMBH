@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin Panel · Nirshu Babu Memorial Hospital</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314463C'/%3E%3Cpath d='M14 8h4v6h6v4h-6v6h-4v-6H8v-4h6z' fill='%23C39A3F'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#FBF9F5;--bg-warm:#F4EFE6;--surface:#FFFFFF;
+    --green-900:#12362C;--green-700:#164a3b;--green-600:#1f6350;--green-500:#2b7d64;
+    --tint:#EAF2ED;--tint-2:#F1EBDD;--gold:#C0973B;--gold-deep:#a67f2a;--gold-soft:#EBDDB6;
+    --ink:#17241f;--muted:#5a6a63;--line:#E6E0D4;
+    --red:#c0453b;--red-bg:#fbeceb;--blue:#2f6dbf;--blue-bg:#eaf0fa;
+    --amber:#b7791f;--amber-bg:#fbf3e2;--green-bg:#e7f2ec;
+    --shadow-sm:0 1px 2px rgba(18,54,44,.06),0 4px 14px rgba(18,54,44,.05);
+    --shadow-md:0 8px 30px rgba(18,54,44,.10);--shadow-lg:0 24px 60px rgba(18,54,44,.14);--r:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;color:var(--green-900);letter-spacing:-.01em}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit}
+  .hidden{display:none !important}
+
+  /* LOGIN */
+  .login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:radial-gradient(1000px 500px at 80% -10%,rgba(192,151,59,.12),transparent 60%),radial-gradient(800px 500px at -5% 20%,rgba(43,125,100,.10),transparent 55%),var(--bg)}
+  .login-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-lg);width:100%;max-width:410px;padding:40px 36px;text-align:center}
+  .login-mark{width:60px;height:60px;border-radius:16px;background:linear-gradient(140deg,var(--green-700),var(--green-900));display:grid;place-items:center;margin:0 auto 22px;box-shadow:var(--shadow-sm)}
+  .login-mark svg{width:32px;height:32px}
+  .login-card h1{font-size:1.5rem;margin-bottom:6px}
+  .login-card .sub{color:var(--muted);font-size:.92rem;margin-bottom:8px}
+  .mode-tag{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:4px 11px;border-radius:999px;margin-bottom:26px}
+  .mode-tag svg{width:13px;height:13px}
+  .mode-demo{background:var(--amber-bg);color:var(--amber)}
+  .mode-prod{background:var(--green-bg);color:var(--green-600)}
+  .fld{text-align:left;margin-bottom:16px}
+  .fld label{display:block;font-size:.82rem;font-weight:600;color:var(--green-900);margin-bottom:7px}
+  .fld input,.fld select,.fld textarea{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:11px;font-size:.95rem;background:var(--bg);transition:.2s}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--green-600);background:#fff;box-shadow:0 0 0 4px rgba(43,125,100,.10)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:600;font-size:.95rem;padding:13px 22px;border-radius:11px;border:1.5px solid transparent;transition:.22s;white-space:nowrap}
+  .btn-primary{background:var(--green-700);color:#fff}
+  .btn-primary:hover{background:var(--green-600)}
+  .btn-gold{background:var(--gold);color:#241c05}
+  .btn-gold:hover{background:var(--gold-deep);color:#fff}
+  .btn-ghost{background:transparent;border-color:var(--line);color:var(--green-900)}
+  .btn-ghost:hover{border-color:var(--green-700);background:#fff}
+  .btn-block{width:100%}
+  .login-err{color:var(--red);font-size:.85rem;margin-top:14px;min-height:20px}
+  .login-hint{margin-top:22px;font-size:.78rem;color:var(--muted);background:var(--bg-warm);border-radius:11px;padding:12px 14px;line-height:1.5}
+  .login-hint b{color:var(--green-900)}
+
+  /* SHELL */
+  .app{min-height:100vh;display:flex;flex-direction:column}
+  .topnav{background:var(--green-900);color:#eaf2ed;padding:0 24px;position:sticky;top:0;z-index:20}
+  .topnav-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(140deg,var(--green-600),var(--green-700));display:grid;place-items:center}
+  .brand-mark svg{width:21px;height:21px}
+  .brand b{font-family:'Fraunces',serif;font-size:1.02rem;color:#fff;display:block;line-height:1.05}
+  .brand span{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-soft)}
+  .topnav .right{display:flex;align-items:center;gap:12px}
+  .role-badge{font-size:.7rem;font-weight:700;padding:5px 11px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+  .role-badge svg{width:13px;height:13px}
+  .role-super{background:rgba(192,151,59,.25);color:#f0d59a}
+  .role-admin{background:rgba(43,125,100,.3);color:#bfe6d5}
+  .logout{background:rgba(255,255,255,.08);color:#eaf2ed;border:none;padding:8px 15px;border-radius:9px;font-size:.85rem;font-weight:600;display:inline-flex;gap:7px;align-items:center;transition:.2s}
+  .logout:hover{background:rgba(255,255,255,.16)}
+  .logout svg{width:16px;height:16px}
+
+  .main{flex:1;max-width:1320px;width:100%;margin:0 auto;padding:26px 24px 70px}
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .page-head h2{font-size:1.7rem}
+  .page-head p{color:var(--muted);font-size:.9rem}
+  .head-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px;box-shadow:var(--shadow-sm)}
+  .stat .si{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;margin-bottom:12px}
+  .stat .si svg{width:20px;height:20px}
+  .si.a{background:var(--tint);color:var(--green-700)}
+  .si.b{background:var(--blue-bg);color:var(--blue)}
+  .si.c{background:var(--amber-bg);color:var(--amber)}
+  .si.d{background:var(--green-bg);color:var(--green-600)}
+  .si.e{background:var(--red-bg);color:var(--red)}
+  .stat b{font-family:'Fraunces',serif;font-size:1.7rem;color:var(--green-900);display:block;line-height:1}
+  .stat span{font-size:.8rem;color:var(--muted);font-weight:500}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{padding:9px 16px;border-radius:999px;font-size:.86rem;font-weight:600;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);transition:.2s;display:inline-flex;align-items:center;gap:7px}
+  .chip:hover{border-color:var(--green-600);color:var(--green-700)}
+  .chip.active{background:var(--green-700);border-color:var(--green-700);color:#fff}
+  .chip .n{background:rgba(0,0,0,.12);padding:0 7px;border-radius:999px;font-size:.75rem}
+  .chip.active .n{background:rgba(255,255,255,.22)}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .search{position:relative;flex:1;min-width:200px}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
+  .search input{width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--line);border-radius:10px;font-size:.9rem;background:var(--surface)}
+  .search input:focus{outline:none;border-color:var(--green-600);box-shadow:0 0 0 4px rgba(43,125,100,.08)}
+  .toolbar select{padding:10px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:.86rem;background:var(--surface);color:var(--ink);font-weight:500}
+  .toolbar select:focus{outline:none;border-color:var(--green-600)}
+
+  .table-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:1040px}
+  thead th{background:var(--bg-warm);text-align:left;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:13px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+  tbody td{padding:14px;border-bottom:1px solid var(--line);font-size:.89rem;vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--bg)}
+  .cell-name b{color:var(--green-900);display:block}
+  .src{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;display:inline-block;margin-top:3px}
+  .src-website{background:var(--blue-bg);color:var(--blue)}
+  .src-whatsapp{background:#e3f6ea;color:#128C4B}
+  .src-walk-in{background:var(--tint-2);color:var(--gold-deep)}
+  .cell-phone a{color:var(--green-700);font-weight:600;text-decoration:none}
+  .cell-phone a:hover{text-decoration:underline}
+  .cell-problem{max-width:230px;color:var(--muted);font-size:.85rem}
+  .dept-tag{display:inline-block;background:var(--tint);color:var(--green-700);font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:999px}
+  .fee{display:inline-flex;flex-direction:column;gap:3px}
+  .fee-status{font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;width:fit-content}
+  .fee-paid{background:var(--green-bg);color:var(--green-600)}
+  .fee-partial{background:var(--amber-bg);color:var(--amber)}
+  .fee-unpaid{background:var(--red-bg);color:var(--red)}
+  .fee-amt{font-size:.82rem;color:var(--green-900);font-weight:600}
+  .act-btns{display:flex;gap:6px}
+  .ico-btn{background:none;border:1.5px solid var(--line);color:var(--muted);padding:7px;border-radius:8px;transition:.2s;line-height:0}
+  .ico-btn:hover{border-color:var(--green-600);color:var(--green-700)}
+  .ico-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+  .ico-btn svg{width:16px;height:16px;display:block}
+  .empty{padding:56px 24px;text-align:center;color:var(--muted)}
+  .empty svg{width:50px;height:50px;color:var(--line);margin:0 auto 12px}
+  .empty b{color:var(--green-900);font-family:'Fraunces',serif;font-size:1.1rem;display:block;margin-bottom:4px}
+
+  /* MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(18,54,44,.5);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+  .modal{background:var(--surface);border-radius:20px;box-shadow:var(--shadow-lg);width:100%;max-width:560px;padding:30px 30px 26px}
+  .modal h3{font-size:1.35rem;margin-bottom:4px}
+  .modal .msub{color:var(--muted);font-size:.88rem;margin-bottom:22px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .modal .fld{margin-bottom:14px}
+  .modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+  .req{color:var(--red)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green-900);color:#fff;padding:13px 22px;border-radius:12px;font-size:.9rem;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;transition:.3s;z-index:60;display:flex;gap:9px;align-items:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{width:18px;height:18px;color:var(--gold-soft)}
+
+  @media(max-width:1000px){.stats{grid-template-columns:1fr 1fr 1fr}}
+  @media(max-width:620px){.stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.head-actions{width:100%}.head-actions .btn{flex:1}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M11 3h2v6h6v2h-6v6h-2v-6H5V9h6z" fill="#C0973B"/></svg></div>
+    <h1>Hospital Admin Panel</h1>
+    <p class="sub">Nirshu Babu Memorial Hospital</p>
+    <div class="mode-tag" id="modeTag"></div>
+    <div id="prodFields" class="hidden">
+      <div class="fld"><label>Email</label><input type="email" id="email" placeholder="admin@nbmhospital.in" autocomplete="username" /></div>
+    </div>
+    <div class="fld"><label id="pwLabel">Password</label>
+      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path stroke-linecap="round" d="M8 10V7a4 4 0 018 0v3"/></svg>
+      Sign in securely
+    </button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-hint" id="loginHint"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app hidden" id="app">
+  <div class="topnav"><div class="topnav-in">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M11 3h2v6h6v2h-6v6h-2v-6H5V9h6z" fill="#C0973B"/></svg></span>
+      <span><b>Nirshu Babu Memorial</b><span>Admin Panel</span></span>
+    </div>
+    <div class="right">
+      <span class="role-badge" id="roleBadge"></span>
+      <button class="logout" onclick="doLogout()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7M13 16v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Logout</button>
+    </div>
+  </div></div>
+
+  <div class="main">
+    <div class="page-head">
+      <div><h2>Patients &amp; Appointments</h2><p>All enquiries and bookings from the website, WhatsApp and walk-ins.</p></div>
+      <div class="head-actions">
+        <button class="btn btn-ghost" onclick="exportCSV()"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Export CSV</button>
+        <button class="btn btn-gold" onclick="openAdd()"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>Add Patient</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="si a"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/></svg></div><b id="stToday">0</b><span>Today's bookings</span></div>
+      <div class="stat"><div class="si b"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h15"/></svg></div><b id="stUpcoming">0</b><span>Upcoming</span></div>
+      <div class="stat"><div class="si d"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div><b id="stDone">0</b><span>Completed</span></div>
+      <div class="stat"><div class="si e"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4M12 16h.01"/></svg></div><b id="stUnpaid">0</b><span>Fee unpaid</span></div>
+      <div class="stat"><div class="si c"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><b id="stRevenue">₹0</b><span>Collected (30 days)</span></div>
+    </div>
+
+    <div class="chips" id="chips">
+      <button class="chip active" data-view="today" onclick="setView('today')">Today <span class="n" id="cToday">0</span></button>
+      <button class="chip" data-view="upcoming" onclick="setView('upcoming')">Upcoming <span class="n" id="cUpcoming">0</span></button>
+      <button class="chip" data-view="completed" onclick="setView('completed')">Completed <span class="n" id="cCompleted">0</span></button>
+      <button class="chip" data-view="all" onclick="setView('all')">Last 30 days <span class="n" id="cAll">0</span></button>
+    </div>
+
+    <div class="toolbar">
+      <div class="search"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4-4"/></svg>
+        <input type="text" id="searchBox" placeholder="Search name, phone or problem..." oninput="render()" /></div>
+      <select id="fDept" onchange="render()"><option value="">All departments</option><option>Orthopaedics</option><option>Gynaecology &amp; Obstetrics</option><option>General Medicine</option><option>Emergency</option><option>Diagnostics</option><option>Other</option></select>
+      <select id="fFee" onchange="render()"><option value="">All fee status</option><option value="paid">Paid</option><option value="partial">Partial</option><option value="unpaid">Unpaid</option></select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-scroll"><table>
+        <thead><tr><th>Booking date</th><th>Patient</th><th>Phone</th><th>Department</th><th>Problem / Reason</th><th>Fee</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <div class="empty hidden" id="emptyState">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <b>No records here</b><span>Nothing matches this view yet.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="overlay hidden" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Add Patient</h3>
+    <p class="msub">Website enquiries save here automatically. Add WhatsApp &amp; walk-in patients manually.</p>
+    <div class="grid2">
+      <div class="fld"><label>Patient name <span class="req">*</span></label><input type="text" id="mName" placeholder="Full name" /></div>
+      <div class="fld"><label>Phone <span class="req">*</span></label><input type="tel" id="mPhone" placeholder="10-digit mobile" /></div>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>Came via</label><select id="mSource"><option value="walk-in">Walk-in</option><option value="whatsapp">WhatsApp</option><option value="website">Website</option></select></div>
+      <div class="fld"><label>Department</label><select id="mDept"><option>Orthopaedics</option><option>Gynaecology &amp; Obstetrics</option><option>General Medicine</option><option>Emergency</option><option>Diagnostics</option><option>Other</option></select></div>
+    </div>
+    <div class="fld"><label>Problem / Reason for visit</label><textarea id="mProblem" rows="2" placeholder="e.g. Knee pain, fracture follow-up, pregnancy check-up..."></textarea></div>
+    <div class="grid2">
+      <div class="fld"><label>Booking date</label><input type="date" id="mDate" /></div>
+      <div class="fld"><label>Appointment status</label><select id="mStatus"><option value="new">New</option><option value="contacted">Contacted</option><option value="done">Completed</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>Fee status</label><select id="mFeeStatus"><option value="unpaid">Unpaid</option><option value="partial">Partial</option><option value="paid">Paid</option></select></div>
+      <div class="fld"><label>Fee paid (₹)</label><input type="number" id="mFeeAmount" min="0" placeholder="0" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="savePatient()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== CONFIG ===== */
+const CONFIG = {
+  SUPABASE_URL: 'https://cluikdgkpqgahstfsbda.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_SnL_jSe2yEsgEPpUxGeRPA_v6w0cLbv',
+  DEMO_PASSWORD: 'nbm@admin'
+};
+const LIVE = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY);
+const LS_KEY='nbm_enquiries';
+let db=null, DATA=[], VIEW='today', ROLE='admin', EDIT_ID=null;
+if (LIVE) db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+/* ===== helpers ===== */
+function ymd(d){const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
+const TODAY = ymd(new Date());
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function money(n){return '₹'+Number(n||0).toLocaleString('en-IN');}
+function fmtDate(v){if(!v)return '—';const d=new Date(v);return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});}
+
+/* ===== mode UI ===== */
+(function(){const tag=document.getElementById('modeTag'),hint=document.getElementById('loginHint');
+  if(LIVE){tag.className='mode-tag mode-prod';tag.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg> LIVE · Secure database';
+    document.getElementById('prodFields').classList.remove('hidden');
+    hint.innerHTML='<b>Live mode.</b> Sign in with the admin email &amp; password created in Supabase. Your role (admin / super admin) decides what you can do.';
+  }else{tag.className='mode-tag mode-demo';tag.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4M12 16h.01"/></svg> Demo mode';
+    hint.innerHTML='<b>Demo mode.</b> Password: <b>nbm@admin</b>. Runs as Super Admin so you can see every feature.';}
+})();
+
+/* ===== auth ===== */
+async function doLogin(){
+  const err=document.getElementById('loginErr');err.textContent='';
+  const pw=document.getElementById('password').value;
+  if(LIVE){
+    const email=document.getElementById('email').value.trim();
+    const {error}=await db.auth.signInWithPassword({email,password:pw});
+    if(error){err.textContent='Login failed: '+error.message;return;}
+    await loadRole(); enterApp();
+  }else{
+    if(pw===CONFIG.DEMO_PASSWORD){ROLE='super_admin';sessionStorage.setItem('nbm_auth','1');enterApp();}
+    else err.textContent='Incorrect password. (Demo password: nbm@admin)';
+  }
+}
+async function loadRole(){
+  ROLE='admin';
+  try{
+    const {data:u}=await db.auth.getUser();
+    if(u&&u.user){
+      const {data}=await db.from('staff').select('role').eq('id',u.user.id).maybeSingle();
+      if(data&&data.role) ROLE=data.role;
+    }
+  }catch(e){}
+}
+async function doLogout(){if(LIVE&&db)await db.auth.signOut();sessionStorage.removeItem('nbm_auth');location.reload();}
+async function checkSession(){
+  if(LIVE){const {data}=await db.auth.getSession();if(data.session){await loadRole();enterApp();}}
+  else if(sessionStorage.getItem('nbm_auth')==='1'){ROLE='super_admin';enterApp();}
+}
+function enterApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  const rb=document.getElementById('roleBadge');
+  if(ROLE==='super_admin'){rb.className='role-badge role-super';rb.innerHTML='<svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 1l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 6.7l5.4-.8z"/></svg> Super Admin';}
+  else{rb.className='role-badge role-admin';rb.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21v-1a6 6 0 0116 0v1"/></svg> Admin';}
+  loadData();
+  startRealtime();
+}
+
+/* ===== data ===== */
+function seedDemo(){const t=new Date();const d=n=>{const x=new Date(t);x.setDate(x.getDate()+n);return ymd(x);};
+  return [
+    {id:'d1',created_at:new Date().toISOString(),name:'Ramesh Kumar',phone:'9876543210',source:'website',department:'Orthopaedics',problem:'Knee pain since 2 weeks',appointment_date:d(0),fee_status:'paid',fee_amount:500,status:'contacted'},
+    {id:'d2',created_at:new Date().toISOString(),name:'Sunita Devi',phone:'9123456780',source:'whatsapp',department:'Gynaecology & Obstetrics',problem:'Pregnancy check-up (5th month)',appointment_date:d(0),fee_status:'unpaid',fee_amount:0,status:'new'},
+    {id:'d3',created_at:new Date().toISOString(),name:'Amit Raj',phone:'9988776655',source:'walk-in',department:'Emergency',problem:'Right arm fracture — accident',appointment_date:d(2),fee_status:'partial',fee_amount:1000,status:'new'},
+    {id:'d4',created_at:new Date(Date.now()-3*864e5).toISOString(),name:'Pooja Singh',phone:'9001122334',source:'website',department:'Orthopaedics',problem:'Post-surgery follow-up',appointment_date:d(-2),fee_status:'paid',fee_amount:300,status:'done'},
+    {id:'d5',created_at:new Date().toISOString(),name:'Vijay Yadav',phone:'9445566778',source:'whatsapp',department:'General Medicine',problem:'Fever and weakness',appointment_date:d(4),fee_status:'unpaid',fee_amount:0,status:'new'}
+  ];
+}
+async function loadData(){
+  if(LIVE){
+    const {data,error}=await db.from('enquiries').select('*').order('created_at',{ascending:false}).limit(2000);
+    DATA=error?[]:(data||[]);
+    if(error) toast('Load error: '+error.message);
+  }else{
+    let s=[];try{s=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch(e){}
+    if(!s.length){s=seedDemo();localStorage.setItem(LS_KEY,JSON.stringify(s));}
+    DATA=s;
+  }
+  render();
+}
+
+/* ===== realtime: auto-update when a new booking arrives ===== */
+let RT_ON=false;
+function startRealtime(){
+  if(!LIVE||RT_ON)return; RT_ON=true;
+  db.channel('enquiries-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'enquiries'},(payload)=>{
+      if(payload.eventType==='INSERT'){
+        const r=payload.new; if(!DATA.some(x=>x.id===r.id)) DATA.unshift(r);
+        toast('New booking: '+(r.name||'patient'));
+      }else if(payload.eventType==='UPDATE'){
+        const i=DATA.findIndex(x=>x.id===payload.new.id); if(i>-1) DATA[i]=payload.new;
+      }else if(payload.eventType==='DELETE'){
+        DATA=DATA.filter(x=>x.id!==payload.old.id);
+      }
+      render();
+    })
+    .subscribe();
+}
+
+/* ===== views ===== */
+function setView(v){VIEW=v;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.view===v));render();}
+function inView(r,v){
+  const ad=r.appointment_date;
+  if(v==='today') return ad===TODAY;
+  if(v==='upcoming') return ad&&ad>TODAY;
+  if(v==='completed') return (ad&&ad<TODAY)||r.status==='done';
+  if(v==='all'){const cut=Date.now()-30*864e5;return new Date(r.created_at).getTime()>=cut;}
+  return true;
+}
+
+function render(){
+  const q=document.getElementById('searchBox').value.toLowerCase();
+  const fd=document.getElementById('fDept').value, ff=document.getElementById('fFee').value;
+
+  // chip counts
+  document.getElementById('cToday').textContent=DATA.filter(r=>inView(r,'today')).length;
+  document.getElementById('cUpcoming').textContent=DATA.filter(r=>inView(r,'upcoming')).length;
+  document.getElementById('cCompleted').textContent=DATA.filter(r=>inView(r,'completed')).length;
+  document.getElementById('cAll').textContent=DATA.filter(r=>inView(r,'all')).length;
+
+  // stats
+  const last30=DATA.filter(r=>inView(r,'all'));
+  document.getElementById('stToday').textContent=DATA.filter(r=>inView(r,'today')).length;
+  document.getElementById('stUpcoming').textContent=DATA.filter(r=>inView(r,'upcoming')).length;
+  document.getElementById('stDone').textContent=DATA.filter(r=>r.status==='done'||(r.appointment_date&&r.appointment_date<TODAY)).length;
+  document.getElementById('stUnpaid').textContent=DATA.filter(r=>r.fee_status==='unpaid'||!r.fee_status).length;
+  document.getElementById('stRevenue').textContent=money(last30.reduce((a,r)=>a+Number(r.fee_amount||0),0));
+
+  let list=DATA.filter(r=>inView(r,VIEW)).filter(r=>{
+    const hay=((r.name||'')+' '+(r.phone||'')+' '+(r.problem||'')+' '+(r.message||'')).toLowerCase();
+    return (!q||hay.includes(q))&&(!fd||r.department===fd)&&(!ff||(r.fee_status||'unpaid')===ff);
+  });
+  list.sort((a,b)=>(a.appointment_date||'').localeCompare(b.appointment_date||'')|| new Date(b.created_at)-new Date(a.created_at));
+  if(VIEW==='completed'||VIEW==='all') list.reverse();
+
+  const rows=document.getElementById('rows'), empty=document.getElementById('emptyState');
+  if(!list.length){rows.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  const canDelete=ROLE==='super_admin';
+
+  rows.innerHTML=list.map(r=>{
+    const fs=r.fee_status||'unpaid';
+    return `<tr>
+      <td style="white-space:nowrap"><b style="color:var(--green-900)">${fmtDate(r.appointment_date)}</b></td>
+      <td class="cell-name"><b>${esc(r.name)}</b><span class="src src-${esc(r.source||'website')}">${esc((r.source||'website').replace('-',' '))}</span></td>
+      <td class="cell-phone"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></td>
+      <td><span class="dept-tag">${esc(r.department||'—')}</span></td>
+      <td class="cell-problem">${esc(r.problem||r.message||'—')}</td>
+      <td><span class="fee"><span class="fee-status fee-${fs}">${fs}</span><span class="fee-amt">${money(r.fee_amount)}</span></span></td>
+      <td><span class="dept-tag" style="background:${r.status==='done'?'var(--green-bg)':r.status==='contacted'?'var(--blue-bg)':'var(--amber-bg)'};color:${r.status==='done'?'var(--green-600)':r.status==='contacted'?'var(--blue)':'var(--amber)'}">${esc(r.status||'new')}</span></td>
+      <td><div class="act-btns">
+        <button class="ico-btn" title="Edit fee / details" onclick='openEdit(${JSON.stringify(r.id)})'><svg fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
+        ${canDelete?`<button class="ico-btn del" title="Delete (super admin)" onclick='delPatient(${JSON.stringify(r.id)})'><svg fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>`:''}
+      </div></td>
+    </tr>`;}).join('');
+}
+
+/* ===== add / edit ===== */
+function openAdd(){EDIT_ID=null;document.getElementById('modalTitle').textContent='Add Patient';
+  document.getElementById('mName').value='';document.getElementById('mPhone').value='';
+  document.getElementById('mSource').value='walk-in';document.getElementById('mDept').selectedIndex=0;
+  document.getElementById('mProblem').value='';document.getElementById('mDate').value=TODAY;
+  document.getElementById('mStatus').value='new';document.getElementById('mFeeStatus').value='unpaid';document.getElementById('mFeeAmount').value='';
+  document.getElementById('modal').classList.remove('hidden');
+}
+function openEdit(id){const r=DATA.find(x=>x.id===id);if(!r)return;EDIT_ID=id;
+  document.getElementById('modalTitle').textContent='Edit Patient';
+  document.getElementById('mName').value=r.name||'';document.getElementById('mPhone').value=r.phone||'';
+  document.getElementById('mSource').value=r.source||'website';document.getElementById('mDept').value=r.department||'Orthopaedics';
+  document.getElementById('mProblem').value=r.problem||r.message||'';document.getElementById('mDate').value=r.appointment_date||'';
+  document.getElementById('mStatus').value=r.status||'new';document.getElementById('mFeeStatus').value=r.fee_status||'unpaid';
+  document.getElementById('mFeeAmount').value=r.fee_amount||'';
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+async function savePatient(){
+  const name=document.getElementById('mName').value.trim();
+  const phone=document.getElementById('mPhone').value.trim();
+  if(!name||!phone){toast('Name and phone are required');return;}
+  const rec={
+    name,phone,
+    source:document.getElementById('mSource').value,
+    department:document.getElementById('mDept').value,
+    problem:document.getElementById('mProblem').value.trim(),
+    appointment_date:document.getElementById('mDate').value||null,
+    status:document.getElementById('mStatus').value,
+    fee_status:document.getElementById('mFeeStatus').value,
+    fee_amount:Number(document.getElementById('mFeeAmount').value||0)
+  };
+  const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Saving...';
+  if(EDIT_ID){
+    if(LIVE){const {error}=await db.from('enquiries').update(rec).eq('id',EDIT_ID);if(error){toast('Error: '+error.message);btn.disabled=false;btn.textContent='Save';return;}}
+    const i=DATA.findIndex(x=>x.id===EDIT_ID);if(i>-1)DATA[i]={...DATA[i],...rec};
+    if(!LIVE)localStorage.setItem(LS_KEY,JSON.stringify(DATA));
+    toast('Patient updated');
+  }else{
+    rec.id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'p'+Date.now();
+    rec.created_at=new Date().toISOString();
+    if(LIVE){const {error}=await db.from('enquiries').insert([rec]);if(error){toast('Error: '+error.message);btn.disabled=false;btn.textContent='Save';return;}}
+    DATA.unshift(rec);
+    if(!LIVE)localStorage.setItem(LS_KEY,JSON.stringify(DATA));
+    toast('Patient added');
+  }
+  btn.disabled=false;btn.textContent='Save';closeModal();
+  if(LIVE)await loadData();else render();
+}
+async function delPatient(id){
+  if(ROLE!=='super_admin'){toast('Only super admin can delete');return;}
+  if(!confirm('Delete this record permanently? This cannot be undone.'))return;
+  if(LIVE){const {error}=await db.from('enquiries').delete().eq('id',id);if(error){toast('Delete blocked: '+error.message);return;}}
+  DATA=DATA.filter(x=>x.id!==id);
+  if(!LIVE)localStorage.setItem(LS_KEY,JSON.stringify(DATA));
+  render();toast('Record deleted');
+}
+
+/* ===== export ===== */
+function exportCSV(){
+  const list=DATA.filter(r=>inView(r,VIEW));
+  if(!list.length){toast('Nothing to export');return;}
+  const head=['Booking date','Name','Phone','Source','Department','Problem','Fee status','Fee paid','Appt status','Created'];
+  const rows=list.map(r=>[r.appointment_date||'',r.name,r.phone,r.source||'',r.department||'',(r.problem||r.message||'').replace(/\n/g,' '),r.fee_status||'',r.fee_amount||0,r.status||'',fmtDate(r.created_at)]);
+  const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const b=new Blob([csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download='nbm-patients-'+VIEW+'-'+TODAY+'.csv';a.click();URL.revokeObjectURL(u);toast('CSV downloaded');
+}
+
+/* ===== toast ===== */
+let tT;function toast(m){const e=document.getElementById('toast');e.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>'+m;e.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),2600);}
+
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+checkSession();
+</script>
+</body>
+</html>
